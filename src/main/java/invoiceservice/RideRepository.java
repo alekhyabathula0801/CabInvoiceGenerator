@@ -11,11 +11,17 @@ public class RideRepository {
     }
 
     public void addRide(String userId, Ride[] rides) {
-       ArrayList<Ride> rideList =  this.userRides.get(userId);
-       if(rideList == null)
-           this.userRides.put(userId,new ArrayList<>(Arrays.asList(rides)));
-       else
-           this.userRides.get(userId).addAll(new ArrayList<>(Arrays.asList(rides)));
+        try {
+            if (userId.length() == 0 | rides.length == 0)
+                throw new InvoiceServiceException("Entered Empty", InvoiceServiceException.ExceptionType.ENTERED_EMPTY);
+            ArrayList<Ride> rideList = this.userRides.get(userId);
+            if (rideList == null)
+                this.userRides.put(userId, new ArrayList<>(Arrays.asList(rides)));
+            else
+                this.userRides.get(userId).addAll(new ArrayList<>(Arrays.asList(rides)));
+        } catch (NullPointerException e) {
+            throw new InvoiceServiceException("Entered Null", InvoiceServiceException.ExceptionType.ENTERED_NULL);
+        }
     }
 
     public Ride[] getRides(String userId) {

@@ -1,17 +1,29 @@
 package invoiceservice;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoRule;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class InvoiceServiceTest {
 
-    InvoiceService invoiceService = null;
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
 
-    @Before
-    public void setUp() throws Exception {
-        invoiceService = new InvoiceService();
-    }
+    @Mock
+    RideRepository rideRepository;
+
+    @InjectMocks
+    public InvoiceService invoiceService;
 
     @Test
     public void givenNormalRideWithDistanceAndTime_shouldReturnTotalFare() {
@@ -40,27 +52,13 @@ public class InvoiceServiceTest {
 
     @Test
     public void givenUserIdAndNormalRides_shouldReturnInvoiceSummary() {
-        String userId = "anju@b.com";
         Ride[] rides = {new Ride(InvoiceService.ServiceType.NORMAL,2.0,5),
                         new Ride(InvoiceService.ServiceType.NORMAL,0.1,1)};
-        invoiceService.addRides(userId,rides);
-        InvoiceSummary summary = invoiceService.getInvoiceSummary(userId);
+        when(rideRepository.getRides("anju@b.com")).thenReturn(rides);
+        InvoiceSummary summary = invoiceService.getInvoiceSummary("anju@b.com");
         InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2,30.0);
         Assert.assertEquals(expectedInvoiceSummary,summary);
-    }
-
-    @Test
-    public void givenUserIdAndMultipleNormalRides_shouldReturnInvoiceSummary() {
-        String userId = "anju@b.com";
-        Ride[] rides = {new Ride(InvoiceService.ServiceType.NORMAL,2.0,5),
-                        new Ride(InvoiceService.ServiceType.NORMAL,0.1,1)};
-        invoiceService.addRides(userId,rides);
-        Ride[] rides1 = {new Ride(InvoiceService.ServiceType.NORMAL,2.0,5),
-                         new Ride(InvoiceService.ServiceType.NORMAL,0.1,1)};
-        invoiceService.addRides(userId,rides1);
-        InvoiceSummary summary = invoiceService.getInvoiceSummary(userId);
-        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(4,60.0);
-        Assert.assertEquals(expectedInvoiceSummary,summary);
+        verify(rideRepository).getRides("anju@b.com");
     }
 
     @Test
@@ -93,24 +91,21 @@ public class InvoiceServiceTest {
         String userId = "anju@b.com";
         Ride[] rides = {new Ride(InvoiceService.ServiceType.PREMIUM,2.0,5),
                         new Ride(InvoiceService.ServiceType.NORMAL,0.1,1)};
-        invoiceService.addRides(userId,rides);
+        when(rideRepository.getRides("anju@b.com")).thenReturn(rides);
         InvoiceSummary summary = invoiceService.getInvoiceSummary(userId);
         InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2,45.0);
         Assert.assertEquals(expectedInvoiceSummary,summary);
+        verify(rideRepository).getRides("anju@b.com");
     }
 
     @Test
-    public void givenUserIdAndMultipleRides_shouldReturnInvoiceSummary() {
-        String userId = "anju@b.com";
-        Ride[] rides = {new Ride(InvoiceService.ServiceType.NORMAL,2.0,5),
-                new Ride(InvoiceService.ServiceType.NORMAL,0.1,1)};
-        invoiceService.addRides(userId,rides);
-        Ride[] rides1 = {new Ride(InvoiceService.ServiceType.NORMAL,2.0,5),
-                new Ride(InvoiceService.ServiceType.PREMIUM,0.1,1)};
-        invoiceService.addRides(userId,rides1);
-        InvoiceSummary summary = invoiceService.getInvoiceSummary(userId);
-        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(4,75.0);
-        Assert.assertEquals(expectedInvoiceSummary,summary);
+    public void givenUserId_whenInvalid_shouldThrowException() {
+        try {
+            when(rideRepository.getRides(null)).thenThrow(new RuntimeException("Entered Null"));
+            invoiceService.getInvoiceSummary(null);
+        } catch (RuntimeException e) {
+            Assert.assertEquals(e.getMessage(),"Entered Null");
+        }
     }
 
 }
