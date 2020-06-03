@@ -2,12 +2,12 @@ package invoiceservice;
 
 public class Ride {
 
-    public InvoiceService.ServiceType serviceType;
+    public RideType rideType;
     public int time;
     public double distance;
 
-    public Ride(InvoiceService.ServiceType serviceType, double distance, int time) {
-        this.serviceType = serviceType;
+    public Ride(RideType rideType, double distance, int time) {
+        this.rideType = rideType;
         this.distance = distance;
         this.time = time;
     }

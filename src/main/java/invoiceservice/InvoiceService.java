@@ -4,18 +4,15 @@ public class InvoiceService {
 
     private RideRepository rideRepository;
 
-    enum ServiceType {NORMAL,PREMIUM}
-
-    public double calculateFare(ServiceType serviceType, double distance, int time) {
-        CabSubscription cabSubscription = new CabSubscription(serviceType);
-        double totalFare = distance*cabSubscription.MINIMUM_COST_PER_KILOMETER + time*cabSubscription.COST_PER_TIME;
-        return Math.max(totalFare,cabSubscription.MINIMUM_FARE);
+    public double calculateFare(RideType rideType, double distance, int time) {
+        double totalFare = distance* rideType.getCostPerKiloMeter() + time* rideType.getCostPerMinute();
+        return Math.max(totalFare, rideType.getMinimumCost());
     }
 
     public InvoiceSummary calculateFare(Ride[] rides) {
         double totalFare = 0;
         for(Ride ride:rides) {
-            totalFare += this.calculateFare(ride.serviceType,ride.distance,ride.time);
+            totalFare += this.calculateFare(ride.rideType,ride.distance,ride.time);
         }
         return new InvoiceSummary(rides.length,totalFare);
     }
